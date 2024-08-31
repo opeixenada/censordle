@@ -1,7 +1,7 @@
-import React, {useState, useEffect, FormEvent} from 'react';
-import {collection, getDocs} from 'firebase/firestore';
-import {Movie} from "./types";
-import {db} from "./firebase";
+import React, { useState, useEffect, FormEvent } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { Movie } from "./types";
+import { db } from "./firebase";
 
 const Game: React.FC = () => {
     const [movies, setMovies] = useState<Movie[]>([]);
@@ -36,9 +36,22 @@ const Game: React.FC = () => {
         fetchMovies();
     }, []);
 
+    const shuffleArray = <T,>(array: T[]): T[] => {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    };
+
     const selectRandomMovie = (movieList: Movie[]) => {
         const randomIndex = Math.floor(Math.random() * movieList.length);
-        setCurrentMovie(movieList[randomIndex]);
+        const selectedMovie = movieList[randomIndex];
+
+        // Shuffle the parental guide entries
+        selectedMovie.parentalGuideEntries = shuffleArray(selectedMovie.parentalGuideEntries);
+
+        setCurrentMovie(selectedMovie);
         setRevealedEntries(1);
         setGameOver(false);
         setFeedback(null);
@@ -50,6 +63,13 @@ const Game: React.FC = () => {
         if (!currentMovie || guess.trim() === '') return; // Prevent empty submissions
 
         const normalizedGuess = guess.trim().toLowerCase();
+
+        // Check if the guess has already been made
+        if (previousGuesses.map(g => g.toLowerCase()).includes(normalizedGuess)) {
+            setFeedback('You have already guessed that. Try something else!');
+            return;
+        }
+
         const normalizedTitle = currentMovie.title.toLowerCase();
 
         if (normalizedGuess === normalizedTitle) {
@@ -59,14 +79,14 @@ const Game: React.FC = () => {
             const remainingGuesses = currentMovie.parentalGuideEntries.length - revealedEntries;
             if (revealedEntries < currentMovie.parentalGuideEntries.length) {
                 setRevealedEntries(prevEntries => prevEntries + 1);
-                setFeedback(`Incorrect guess. You have ${remainingGuesses} more guesses.`);
+                setFeedback(`Incorrect guess. You have ${remainingGuesses} more hints.`);
                 setPreviousGuesses(prev => [...prev, guess.trim()]);
             } else {
                 setGameOver(true);
                 setFeedback(`Game Over. The movie was: ${currentMovie.title}`);
             }
         }
-        setGuess('');
+        setGuess(''); // Clear the input field after processing the guess
     };
 
     const startNewGame = () => {
