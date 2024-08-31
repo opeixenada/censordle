@@ -11,6 +11,7 @@ type AdvisoryEntry = {
 };
 
 type MovieInfo = {
+    imdbID: string;
     title: string;
     year: string;
     parentalGuideEntries: AdvisoryEntry[];
@@ -37,7 +38,7 @@ const fetchHTML = async (url: string): Promise<string> => {
     }
 };
 
-const extractInfo = (html: string): MovieInfo => {
+const extractInfo = (movieId: string, html: string): MovieInfo => {
     if (!html) {
         throw new Error('Received empty HTML content');
     }
@@ -90,9 +91,10 @@ const extractInfo = (html: string): MovieInfo => {
 
     // Return the movie info in the specified format
     return {
-        title,
-        year,
-        parentalGuideEntries
+        imdbID: movieId,
+        title: title,
+        year: year,
+        parentalGuideEntries: parentalGuideEntries
     };
 };
 
@@ -170,7 +172,7 @@ const processMovie = async (movieTitle: string) => {
         console.log(`Found IMDB ID: ${movieId} for "${movieTitle}"`);
 
         const html = await fetchHTML(getURL(movieId));
-        const movieInfo = extractInfo(html);
+        const movieInfo = extractInfo(movieId, html);
 
         // Save the extracted movie info to a file
         saveMovieInfo(movieInfo);
@@ -179,23 +181,39 @@ const processMovie = async (movieTitle: string) => {
     }
 };
 
-const main = async () => {
-    const inputFilePath = process.argv[2];  // Get the input file path from the command line argument
+async function readMovieTitlesFromDirectory(dirPath: string): Promise<string[]> {
+    const files = fs.readdirSync(dirPath);
+    const movieTitles: string[] = [];
 
-    if (!inputFilePath) {
-        console.error('Please provide a path to the input file as the first argument');
+    for (const file of files) {
+        if (path.extname(file).toLowerCase() === '.txt') {
+            const filePath = path.join(dirPath, file);
+            const content = fs.readFileSync(filePath, 'utf-8');
+            const titles = content.split('\n').map(line => line.trim()).filter(line => line !== '');
+            movieTitles.push(...titles);
+        }
+    }
+
+    return movieTitles;
+}
+
+const main = async () => {
+    const inputDirPath = process.argv[2];  // Get the input directory path from the command line argument
+
+    if (!inputDirPath) {
+        console.error('Please provide a path to the input directory as the first argument');
         process.exit(1);
     }
 
     try {
-        const movieTitles = await readMovieTitlesFromFile(inputFilePath);
+        const movieTitles = await readMovieTitlesFromDirectory(inputDirPath);
 
         if (movieTitles.length === 0) {
-            console.error('No movie titles found in the input file');
+            console.error('No movie titles found in the input directory');
             process.exit(1);
         }
 
-        console.log(`Found ${movieTitles.length} movie titles in the input file`);
+        console.log(`Found ${movieTitles.length} movie titles in the input directory`);
 
         for (const title of movieTitles) {
             await processMovie(title);
