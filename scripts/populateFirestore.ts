@@ -33,22 +33,18 @@ const loadMoviesFromFiles = (): Movie[] => {
     return movies;
 };
 
-const getDocumentId = (movie: Movie): string => {
-    return `${movie.title.replace(/[^a-zA-Z0-9]/g, '_')}_${movie.year}`;
-};
-
 async function populateFirestore(): Promise<void> {
-    const movies = loadMoviesFromFiles();
+    const movies = {
+        "movies": loadMoviesFromFiles()
+    };
 
-    for (const movie of movies) {
-        try {
-            const documentId = getDocumentId(movie);
-            const docRef = db.collection('movies').doc(documentId);
-            await docRef.set(movie);  // This will overwrite the document if it exists
-            console.log(`Updated ${documentId}`);
-        } catch (error) {
-            console.error(`Error updating ${movie.title}:`, error);
-        }
+    try {
+        const documentId = "movies";
+        const docRef = db.collection('movies').doc(documentId);
+        await docRef.set(movies)
+        console.log(`Updated ${documentId}`);
+    } catch (error) {
+        console.error(`Error updating movies`, error);
     }
     console.log('Database population completed!');
 }
