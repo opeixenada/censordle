@@ -16,7 +16,6 @@ const Game: React.FC = () => {
     const [feedback, setFeedback] = useState<string | null>(null);
     const [previousGuesses, setPreviousGuesses] = useState<string[]>([]);
     const [title, setTitle] = useState<string | null>(null);
-    const [isFocused, setIsFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const selectRandomMovie = useCallback((movieList: Movie[]) => {
@@ -31,7 +30,7 @@ const Game: React.FC = () => {
         setGameOver(false);
         setFeedback(null);
         setPreviousGuesses([]);
-    }, []); // No dependencies, so it's only created once
+    }, []);
 
     useEffect(() => {
         const fetchMovies = async () => {
@@ -44,6 +43,7 @@ const Game: React.FC = () => {
                 } as Movie));
                 setMovies(movieList);
                 setMovieTitles(movieList.map(movie => movie.title));
+                setGuess('');
                 selectRandomMovie(movieList);
             } catch (err) {
                 console.error('Error fetching movies:', err);
@@ -56,6 +56,12 @@ const Game: React.FC = () => {
         setTitle(`In which movie does this happen?`);
         fetchMovies();
     }, [selectRandomMovie]);
+
+    const startNewGame = () => {
+        setTitle(`In which movie does this happen?`);
+        selectRandomMovie(movies);
+        setGuess('');
+    };
 
     const getIMDBLink = (movieId: string) => {
         return `https://www.imdb.com/title/${movieId}/`;
@@ -120,7 +126,7 @@ const Game: React.FC = () => {
             setTitle(`Game Over 😵`);
             setFeedback(`It was `);
         }
-        setGuess(''); // Clear the input field after skipping
+        setGuess('');
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -143,11 +149,6 @@ const Game: React.FC = () => {
         if (inputRef.current) {
             inputRef.current.focus();
         }
-    };
-
-    const startNewGame = () => {
-        setTitle(`In which movie does this happen?`);
-        selectRandomMovie(movies);
     };
 
     const renderFeedbackWithLink = () => {
@@ -218,12 +219,10 @@ const Game: React.FC = () => {
                                 type="text"
                                 value={guess}
                                 onChange={handleInputChange}
-                                onFocus={() => setIsFocused(true)}
-                                onBlur={() => setTimeout(() => setIsFocused(false), 200)}
                                 placeholder="Enter movie title"
                                 className="w-full p-3 bg-white text-gray-800 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
                             />
-                            {isFocused && suggestions.length > 0 && (
+                            {suggestions.length > 0 && (
                                 <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-b-lg mt-[-1px] max-h-60 overflow-auto shadow-lg">
                                     {suggestions.map((suggestion, index) => (
                                         <li
