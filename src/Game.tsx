@@ -63,7 +63,7 @@ const Game: React.FC = () => {
                 setPreviousGuesses(prev => [...prev, guess.trim()]);
             } else {
                 setGameOver(true);
-                setFeedback(`Game Over. The correct movie was: ${currentMovie.title}`);
+                setFeedback(`Game Over. The movie was: ${currentMovie.title}`);
             }
         }
         setGuess('');
@@ -86,7 +86,13 @@ const Game: React.FC = () => {
                         <ul className="space-y-3">
                             {currentMovie.parentalGuideEntries.slice(0, revealedEntries).map((entry, index) => (
                                 <li key={index} className="text-base leading-relaxed">
-                                    • {entry.description}
+                                    <span
+                                        className="text-sm font-semibold bg-amber-300 text-gray-700 px-3 py-1 rounded-full mr-1">
+                                        {entry.category}
+                                    </span>
+                                    <span>
+                                    {entry.description}
+                                    </span>
                                 </li>
                             ))}
                         </ul>
@@ -101,7 +107,8 @@ const Game: React.FC = () => {
                             <h4 className="font-semibold text-gray-700 mb-2">Previous Guesses:</h4>
                             <div className="flex flex-wrap gap-2">
                                 {previousGuesses.map((prevGuess, index) => (
-                                    <span key={index} className="text-sm bg-gray-200 text-gray-700 px-3 py-1 rounded-full">
+                                    <span key={index}
+                                          className="text-sm bg-gray-200 text-gray-700 px-3 py-1 rounded-full">
                                         {prevGuess}
                                     </span>
                                 ))}
