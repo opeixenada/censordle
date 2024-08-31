@@ -146,6 +146,7 @@ const Game: React.FC = () => {
     };
 
     const startNewGame = () => {
+        setTitle(`In which movie does this happen?`);
         selectRandomMovie(movies);
     };
 
