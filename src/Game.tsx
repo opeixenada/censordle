@@ -1,4 +1,4 @@
-import React, { useState, useEffect, FormEvent } from 'react';
+import React, {useState, useEffect, FormEvent, useCallback} from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { Movie } from "./types";
 import { db } from "./firebase";
@@ -13,6 +13,20 @@ const Game: React.FC = () => {
     const [gameOver, setGameOver] = useState(false);
     const [feedback, setFeedback] = useState<string | null>(null);
     const [previousGuesses, setPreviousGuesses] = useState<string[]>([]);
+
+    const selectRandomMovie = useCallback((movieList: Movie[]) => {
+        const randomIndex = Math.floor(Math.random() * movieList.length);
+        const selectedMovie = movieList[randomIndex];
+
+        // Shuffle the parental guide entries
+        selectedMovie.parentalGuideEntries = shuffleArray(selectedMovie.parentalGuideEntries);
+
+        setCurrentMovie(selectedMovie);
+        setRevealedEntries(1);
+        setGameOver(false);
+        setFeedback(null);
+        setPreviousGuesses([]);
+    }, []); // No dependencies, so it's only created once
 
     useEffect(() => {
         const fetchMovies = async () => {
@@ -34,7 +48,7 @@ const Game: React.FC = () => {
         };
 
         fetchMovies();
-    }, []);
+    }, [selectRandomMovie]); // Now `selectRandomMovie` is stable
 
     const shuffleArray = <T,>(array: T[]): T[] => {
         for (let i = array.length - 1; i > 0; i--) {
@@ -42,20 +56,6 @@ const Game: React.FC = () => {
             [array[i], array[j]] = [array[j], array[i]];
         }
         return array;
-    };
-
-    const selectRandomMovie = (movieList: Movie[]) => {
-        const randomIndex = Math.floor(Math.random() * movieList.length);
-        const selectedMovie = movieList[randomIndex];
-
-        // Shuffle the parental guide entries
-        selectedMovie.parentalGuideEntries = shuffleArray(selectedMovie.parentalGuideEntries);
-
-        setCurrentMovie(selectedMovie);
-        setRevealedEntries(1);
-        setGameOver(false);
-        setFeedback(null);
-        setPreviousGuesses([]);
     };
 
     const handleGuess = (e?: FormEvent) => {
