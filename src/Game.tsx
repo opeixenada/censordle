@@ -13,6 +13,7 @@ const Game: React.FC = () => {
     const [gameOver, setGameOver] = useState(false);
     const [feedback, setFeedback] = useState<string | null>(null);
     const [previousGuesses, setPreviousGuesses] = useState<string[]>([]);
+    const [title, setTitle] = useState<string | null>(null);
 
     const selectRandomMovie = useCallback((movieList: Movie[]) => {
         const randomIndex = Math.floor(Math.random() * movieList.length);
@@ -47,6 +48,7 @@ const Game: React.FC = () => {
             }
         };
 
+        setTitle(`In which movie does this happen?`);
         fetchMovies();
     }, [selectRandomMovie]); // Now `selectRandomMovie` is stable
 
@@ -74,7 +76,8 @@ const Game: React.FC = () => {
 
         if (normalizedGuess === normalizedTitle) {
             setGameOver(true);
-            setFeedback("Congratulations! You guessed correctly!");
+            setTitle(`Congratulations! 🎉`);
+            setFeedback(`You guessed correctly! It's ${currentMovie.title}.`);
         } else {
             const remainingGuesses = currentMovie.parentalGuideEntries.length - revealedEntries;
             if (revealedEntries < currentMovie.parentalGuideEntries.length) {
@@ -83,7 +86,8 @@ const Game: React.FC = () => {
                 setPreviousGuesses(prev => [...prev, guess.trim()]);
             } else {
                 setGameOver(true);
-                setFeedback(`Game Over. The movie was: ${currentMovie.title}`);
+                setTitle(`Game Over 😵`);
+                setFeedback(`It was ${currentMovie.title}`);
             }
         }
         setGuess(''); // Clear the input field after processing the guess
@@ -99,7 +103,7 @@ const Game: React.FC = () => {
 
     return (
         <div className="max-w-2xl mx-auto mt-10 p-8 bg-white text-gray-800 rounded-lg shadow-2xl">
-            <h2 className="text-3xl font-bold mb-6 text-black text-center">In which movie does this happen?</h2>
+            <h2 className="text-3xl font-bold mb-6 text-black text-center">{title}</h2>
             {!gameOver ? (
                 <>
                     <div className="mb-6 bg-gray-100 p-6 rounded-lg shadow-inner">
