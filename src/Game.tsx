@@ -104,6 +104,21 @@ const Game: React.FC = () => {
         setGuess(''); // Clear the input field after processing the guess
     };
 
+    const handleSkip = () => {
+        if (!currentMovie) return;
+
+        const remainingGuesses = currentMovie.parentalGuideEntries.length - revealedEntries;
+        if (revealedEntries < currentMovie.parentalGuideEntries.length) {
+            setRevealedEntries(prevEntries => prevEntries + 1);
+            setFeedback(`Skipped. You have ${remainingGuesses} more hints.`);
+        } else {
+            setGameOver(true);
+            setTitle(`Game Over 😵`);
+            setFeedback(`It was ${currentMovie!.title}`);
+        }
+        setGuess(''); // Clear the input field after skipping
+    };
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setGuess(value);
@@ -198,13 +213,22 @@ const Game: React.FC = () => {
                                 </ul>
                             )}
                         </div>
-                        <button
-                            type="submit"
-                            className="w-full p-3 mt-4 bg-yellow-400 text-black rounded-lg font-bold hover:bg-yellow-500 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                            disabled={guess.trim() === '' || !movieTitles.includes(guess)}
-                        >
-                            Submit Guess
-                        </button>
+                        <div className="flex gap-4 mt-4">
+                            <button
+                                type="submit"
+                                className="flex-1 p-3 bg-yellow-400 text-black rounded-lg font-bold hover:bg-yellow-500 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={guess.trim() === '' || !movieTitles.includes(guess)}
+                            >
+                                Submit Guess
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleSkip}
+                                className="flex-1 p-3 bg-gray-300 text-gray-700 rounded-lg font-bold hover:bg-gray-400 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500"
+                            >
+                                Skip
+                            </button>
+                        </div>
                     </form>
                 </>
             ) : (
