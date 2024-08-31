@@ -1,4 +1,4 @@
-import React, {FormEvent, useEffect, useRef, useState} from 'react';
+import React, {FormEvent, useCallback, useEffect, useRef, useState} from 'react';
 import {collection, doc, getDoc} from 'firebase/firestore';
 import {Movie, Movies} from "./types";
 import {db} from "./firebase";
@@ -17,6 +17,20 @@ const Game: React.FC = () => {
     const [previousGuesses, setPreviousGuesses] = useState<string[]>([]);
     const [title, setTitle] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+
+    const selectRandomMovie = useCallback((movieList: Movie[]) => {
+        const randomIndex = Math.floor(Math.random() * movieList.length);
+        const selectedMovie = movieList[randomIndex];
+
+        // Shuffle the parental guide entries
+        selectedMovie.parentalGuideEntries = shuffleArray(selectedMovie.parentalGuideEntries);
+
+        setCurrentMovie(selectedMovie);
+        setRevealedEntries(1);
+        setGameOver(false);
+        setFeedback(null);
+        setPreviousGuesses([]);
+    }, [])
 
     useEffect(() => {
         const fetchMovies = async () => {
@@ -39,21 +53,7 @@ const Game: React.FC = () => {
 
         setTitle(`In which movie does this happen?`);
         fetchMovies();
-    }, []);
-
-    const selectRandomMovie = (movieList: Movie[]) => {
-        const randomIndex = Math.floor(Math.random() * movieList.length);
-        const selectedMovie = movieList[randomIndex];
-
-        // Shuffle the parental guide entries
-        selectedMovie.parentalGuideEntries = shuffleArray(selectedMovie.parentalGuideEntries);
-
-        setCurrentMovie(selectedMovie);
-        setRevealedEntries(1);
-        setGameOver(false);
-        setFeedback(null);
-        setPreviousGuesses([]);
-    }
+    }, [selectRandomMovie], );
 
     const startNewGame = () => {
         setTitle(`In which movie does this happen?`);
