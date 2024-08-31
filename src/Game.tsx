@@ -42,7 +42,7 @@ const Game: React.FC = () => {
                     ...doc.data()
                 } as Movie));
                 setMovies(movieList);
-                setMovieTitles(movieList.map(movie => movie.title));
+                setMovieTitles(movieList.map(movie => `${movie.title} (${movie.year})`));
                 setGuess('');
                 selectRandomMovie(movieList);
             } catch (err) {
@@ -93,7 +93,7 @@ const Game: React.FC = () => {
             return;
         }
 
-        const normalizedTitle = currentMovie.title.toLowerCase();
+        const normalizedTitle = `${currentMovie.title.toLowerCase()} (${currentMovie.year})`;
 
         if (normalizedGuess === normalizedTitle) {
             setGameOver(true);
