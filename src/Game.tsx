@@ -57,6 +57,10 @@ const Game: React.FC = () => {
         fetchMovies();
     }, [selectRandomMovie]);
 
+    const getIMDBLink = (movieId: string) => {
+        return `https://www.imdb.com/title/${movieId}/`;
+    };
+
     const shuffleArray = <T, >(array: T[]): T[] => {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -88,7 +92,7 @@ const Game: React.FC = () => {
         if (normalizedGuess === normalizedTitle) {
             setGameOver(true);
             setTitle(`Congratulations! 🎉`);
-            setFeedback(`You guessed correctly! It's ${currentMovie.title}.`);
+            setFeedback(`You guessed correctly! It's `);
         } else {
             const remainingGuesses = currentMovie.parentalGuideEntries.length - revealedEntries;
             if (revealedEntries < currentMovie.parentalGuideEntries.length) {
@@ -98,10 +102,10 @@ const Game: React.FC = () => {
             } else {
                 setGameOver(true);
                 setTitle(`Game Over 😵`);
-                setFeedback(`It was ${currentMovie.title}`);
+                setFeedback(`It was `);
             }
         }
-        setGuess(''); // Clear the input field after processing the guess
+        setGuess('');
     };
 
     const handleSkip = () => {
@@ -114,7 +118,7 @@ const Game: React.FC = () => {
         } else {
             setGameOver(true);
             setTitle(`Game Over 😵`);
-            setFeedback(`It was ${currentMovie!.title}`);
+            setFeedback(`It was `);
         }
         setGuess(''); // Clear the input field after skipping
     };
@@ -145,6 +149,25 @@ const Game: React.FC = () => {
         selectRandomMovie(movies);
     };
 
+    const renderFeedbackWithLink = () => {
+        if (!currentMovie) return null;
+
+        return (
+            <p className="mb-6 text-xl font-semibold">
+                {feedback}
+                <a
+                    href={getIMDBLink(currentMovie.imdbID)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline"
+                >
+                    {currentMovie.title}
+                </a>
+                .
+            </p>
+        );
+    };
+
     if (loading) return <div className="text-center p-4 text-gray-700">Loading...</div>;
     if (error) return <div className="text-center p-4 text-red-600">{error}</div>;
     if (!currentMovie) return <div className="text-center p-4 text-gray-700">No movie selected</div>;
@@ -169,7 +192,7 @@ const Game: React.FC = () => {
                             ))}
                         </ul>
                     </div>
-                    {feedback && (
+                    {feedback && !gameOver && (
                         <p className="mb-4 p-3 bg-yellow-400 text-black rounded-lg font-semibold">
                             {feedback}
                         </p>
@@ -233,7 +256,7 @@ const Game: React.FC = () => {
                 </>
             ) : (
                 <div className="text-center">
-                    <p className="mb-6 text-xl font-semibold">{feedback}</p>
+                    {renderFeedbackWithLink()}
                     <button
                         onClick={startNewGame}
                         className="px-6 py-3 bg-yellow-400 text-black rounded-lg font-bold hover:bg-yellow-500 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-600"
