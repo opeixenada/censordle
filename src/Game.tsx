@@ -19,8 +19,16 @@ const Game: React.FC = () => {
     const inputRef = useRef<HTMLInputElement>(null);
 
     const selectRandomMovie = useCallback((movieList: Movie[]) => {
-        const randomIndex = Math.floor(Math.random() * movieList.length);
-        const selectedMovie = movieList[randomIndex];
+        // Filter movies with more than one parental guide entry
+        const eligibleMovies = movieList.filter(movie => movie.parentalGuideEntries.length > 1);
+
+        if (eligibleMovies.length === 0) {
+            console.warn("No movies with more than one parental guide entry found.");
+            return;
+        }
+
+        const randomIndex = Math.floor(Math.random() * eligibleMovies.length);
+        const selectedMovie = eligibleMovies[randomIndex];
 
         // Shuffle the parental guide entries
         selectedMovie.parentalGuideEntries = shuffleArray(selectedMovie.parentalGuideEntries);
@@ -30,7 +38,7 @@ const Game: React.FC = () => {
         setGameOver(false);
         setFeedback(null);
         setPreviousGuesses([]);
-    }, [])
+    }, []);
 
     useEffect(() => {
         const fetchMovies = async () => {
