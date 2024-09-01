@@ -2,6 +2,7 @@ import React, {FormEvent, useCallback, useEffect, useRef, useState} from 'react'
 import {collection, doc, getDoc} from 'firebase/firestore';
 import {Movie, Movies} from "./types";
 import {db} from "./firebase";
+import CategoryBadge from "./components/CategoryBadge";
 
 const Game: React.FC = () => {
     const [movies, setMovies] = useState<Movie[]>([]);
@@ -189,11 +190,7 @@ const Game: React.FC = () => {
                         <ul className="space-y-3">
                             {currentMovie.parentalGuideEntries.slice(0, revealedEntries).map((entry, index) => (
                                 <li key={index} className="text-base leading-relaxed">
-                                    <span
-                                        className="text-sm font-semibold bg-amber-300 text-gray-700 px-3 py-1 rounded-full mr-2 inline-block whitespace-nowrap"
-                                    >
-                                      {entry.category}
-                                    </span>
+                                    <CategoryBadge entry={entry}/>
                                     <span>
                                     {entry.description}
                                     </span>

@@ -1,5 +1,6 @@
 export interface ParentalGuideEntry {
     category: string;
+    severity: string;
     description: string;
 }
 
