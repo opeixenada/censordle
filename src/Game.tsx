@@ -53,7 +53,7 @@ const Game: React.FC = () => {
 
         setTitle(`In which movie does this happen?`);
         fetchMovies();
-    }, [selectRandomMovie], );
+    }, [selectRandomMovie],);
 
     const startNewGame = () => {
         setTitle(`In which movie does this happen?`);
@@ -182,8 +182,9 @@ const Game: React.FC = () => {
                             {currentMovie.parentalGuideEntries.slice(0, revealedEntries).map((entry, index) => (
                                 <li key={index} className="text-base leading-relaxed">
                                     <span
-                                        className="text-sm font-semibold bg-amber-300 text-gray-700 px-3 py-1 rounded-full mr-1">
-                                        {entry.category}
+                                        className="text-sm font-semibold bg-amber-300 text-gray-700 px-3 py-1 rounded-full mr-2 inline-block whitespace-nowrap"
+                                    >
+                                      {entry.category}
                                     </span>
                                     <span>
                                     {entry.description}
