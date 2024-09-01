@@ -173,7 +173,7 @@ const Game: React.FC = () => {
     if (!currentMovie) return <div className="text-center p-4 text-gray-700">No movie selected</div>;
 
     return (
-        <div className="max-w-2xl mx-auto mt-10 p-8 bg-white text-gray-800 rounded-lg shadow-2xl">
+        <div className="max-w-2xl mx-auto mt-4 p-8 bg-white text-gray-800 rounded-lg shadow-2xl">
             <h2 className="text-3xl font-bold mb-6 text-black text-center">{title}</h2>
             {!gameOver ? (
                 <>
