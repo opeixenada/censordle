@@ -13,16 +13,19 @@ type SeverityBadgeProps = {
 const SeverityBadge: React.FC<SeverityBadgeProps> = ({entry}) => {
     const [showTooltip, setShowTooltip] = useState(false);
 
-    const severityColorMap: Record<string, string> = {
-        none: 'green',
-        mild: 'yellow',
-        moderate: 'orange',
-        severe: 'red',
-    };
-
     const getSeverityColorClass = (severity: string): string => {
-        const color = severityColorMap[severity.toLowerCase()] || 'gray';
-        return `bg-${color}-200 text-${color}-800 ring-${color}-600/20`;
+        switch (severity.toLowerCase()) {
+            case 'none':
+                return 'bg-green-300 text-green-800 ring-green-600/20';
+            case 'mild':
+                return 'bg-yellow-300 text-yellow-800 ring-yellow-600/20';
+            case 'moderate':
+                return 'bg-orange-300 text-orange-800 ring-orange-600/20';
+            case 'severe':
+                return 'bg-red-300 text-red-800 ring-red-600/20';
+            default:
+                return 'bg-gray-300 text-gray-800 ring-gray-600/20';
+        }
     };
 
     const tooltipText = entry.severity || "Severity unknown";
@@ -31,7 +34,7 @@ const SeverityBadge: React.FC<SeverityBadgeProps> = ({entry}) => {
         <div className="relative inline-block">
             <span
                 className={`
-                    text-sm font-semibold text-gray-700 px-3 py-1 rounded-full mr-2 inline-block whitespace-nowrap
+                    text-sm font-semibold px-3 py-1 rounded-full mr-2 inline-block whitespace-nowrap
                     ring-1 ring-inset
                     transition-all duration-200 ease-in-out
                     hover:opacity-80 
