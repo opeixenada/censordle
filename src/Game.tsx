@@ -112,7 +112,7 @@ const Game: React.FC = () => {
         setGuess('');
     };
 
-    const handleSkip = () => {
+    const handleSkipHint = () => {
         if (!currentMovie) return;
 
         const remainingGuesses = currentMovie.parentalGuideEntries.length - revealedEntries;
@@ -241,14 +241,21 @@ const Game: React.FC = () => {
                                 className="flex-1 p-3 bg-yellow-400 text-black rounded-lg font-bold hover:bg-yellow-500 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
                                 disabled={guess.trim() === '' || !movieTitles.includes(guess)}
                             >
-                                Submit Guess
+                                Submit guess
                             </button>
                             <button
                                 type="button"
-                                onClick={handleSkip}
+                                onClick={handleSkipHint}
                                 className="flex-1 p-3 bg-gray-300 text-gray-700 rounded-lg font-bold hover:bg-gray-400 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500"
                             >
-                                Skip
+                                Next hint
+                            </button>
+                            <button
+                                type="button"
+                                onClick={startNewGame}
+                                className="flex-1 p-3 bg-gray-300 text-gray-700 rounded-lg font-bold hover:bg-gray-400 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500"
+                            >
+                                Start new game
                             </button>
                         </div>
                     </form>
@@ -260,7 +267,7 @@ const Game: React.FC = () => {
                         onClick={startNewGame}
                         className="px-6 py-3 bg-yellow-400 text-black rounded-lg font-bold hover:bg-yellow-500 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-600"
                     >
-                        Start New Game
+                        Start new game
                     </button>
                 </div>
             )}
