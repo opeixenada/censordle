@@ -28,13 +28,10 @@ const SeverityBadge: React.FC<SeverityBadgeProps> = ({entry}) => {
         }
     };
 
+
     const getSeverityColorClass = (severity: string): string => {
-        const color = getSeverityColor(severity);
-        return [
-            `bg-${color}-300`,
-            `text-${color}-800`,
-            `ring-${color}-600/20`
-        ].join(' ');
+        const color = getSeverityColor(severity)
+        return `bg-${color}-300 text-${color}-800 ring-${color}-600/20`;
     };
 
     const tooltipText = entry.severity || "Severity unknown";

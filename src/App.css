@@ -3,9 +3,9 @@
 @import 'tailwindcss/utilities';
 
 html, body, #root {
-  height: 100%;
+    height: 100%;
 }
 
 .custom-yellow {
-  color: #F5C518;
+    color: #F5C518;
 }
