@@ -1,8 +1,8 @@
 import React, {FormEvent, useCallback, useEffect, useRef, useState} from 'react';
 import {collection, doc, getDoc} from 'firebase/firestore';
-import {Movie, Movies} from "./types";
-import {db} from "./firebase";
-import CategoryBadge from "./components/CategoryBadge";
+import {Movie, Movies} from "../types";
+import {db} from "../firebase";
+import CategoryBadge from "./CategoryBadge";
 
 const Game: React.FC = () => {
     const [movies, setMovies] = useState<Movie[]>([]);
