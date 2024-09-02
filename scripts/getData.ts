@@ -14,15 +14,30 @@ type MovieInfo = {
     imdbID: string;
     title: string;
     year: string;
+    director: string | null;
     parentalGuideEntries: AdvisoryEntry[];
 };
+
+type ParentalGuideData = {
+    title: string;
+    year: string;
+    parentalGuideEntries: AdvisoryEntry[];
+}
+
+type MoviePageData = {
+    director: string | null;
+}
 
 const requestHeaders = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
     'Accept-Language': 'en-US,en;q=0.9'
 }
 
-const getURL = (movieId: string): string => {
+const getMovieURL = (movieId: string): string => {
+    return `https://www.imdb.com/title/${movieId}`
+}
+
+const getParentalGuideURL = (movieId: string): string => {
     return `https://www.imdb.com/title/${movieId}/parentalguide`
 }
 
@@ -38,7 +53,34 @@ const fetchHTML = async (url: string): Promise<string> => {
     }
 };
 
-const extractInfo = (movieId: string, html: string): MovieInfo => {
+function extractDirector(html: string): string | null {
+    const $ = cheerio.load(html);
+
+    // Find the list item with the "Director" label
+    const directorItem = $('li[data-testid="title-pc-principal-credit"]')
+        .filter((_, el) => $(el).find('.ipc-metadata-list-item__label').text().trim() === 'Director');
+
+    // Extract the director's name from the anchor tag within this item
+    const directorName = directorItem.find('a.ipc-metadata-list-item__list-content-item').html();
+
+    return directorName || null;
+}
+
+
+const extractMovieInfo = (html: string): MoviePageData => {
+    if (!html) {
+        throw new Error('Received empty HTML content');
+    }
+
+    const director = extractDirector(html)
+
+    // Return the movie info in the specified format
+    return {
+        director: director,
+    };
+};
+
+const extractParentalGuideInfo = (html: string): ParentalGuideData => {
     if (!html) {
         throw new Error('Received empty HTML content');
     }
@@ -91,7 +133,6 @@ const extractInfo = (movieId: string, html: string): MovieInfo => {
 
     // Return the movie info in the specified format
     return {
-        imdbID: movieId,
         title: title,
         year: year,
         parentalGuideEntries: parentalGuideEntries
@@ -158,7 +199,7 @@ async function readMovieTitlesFromFile(filePath: string): Promise<string[]> {
         }
     }
 
-    return movieTitles;
+    return Array.from(new Set(movieTitles));
 }
 
 const processMovie = async (movieTitle: string) => {
@@ -171,11 +212,20 @@ const processMovie = async (movieTitle: string) => {
 
         console.log(`Found IMDB ID: ${movieId} for "${movieTitle}"`);
 
-        const html = await fetchHTML(getURL(movieId));
-        const movieInfo = extractInfo(movieId, html);
+        const movieHtml = await fetchHTML(getMovieURL(movieId));
+        const movieData = extractMovieInfo(movieHtml);
+
+        const parentalGuideHtml = await fetchHTML(getParentalGuideURL(movieId));
+        const parentalGuideInfo = extractParentalGuideInfo(parentalGuideHtml);
 
         // Save the extracted movie info to a file
-        saveMovieInfo(movieInfo);
+        saveMovieInfo({
+            imdbID: movieId,
+            title: parentalGuideInfo.title,
+            year: parentalGuideInfo.year,
+            director: movieData.director,
+            parentalGuideEntries: parentalGuideInfo.parentalGuideEntries,
+        });
     } catch (error) {
         console.error(`Error processing "${movieTitle}":`, error);
     }
@@ -194,7 +244,7 @@ async function readMovieTitlesFromDirectory(dirPath: string): Promise<string[]> 
         }
     }
 
-    return movieTitles;
+    return Array.from(new Set(movieTitles));
 }
 
 const main = async () => {
