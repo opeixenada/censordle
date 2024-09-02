@@ -1,4 +1,4 @@
-import React, {FormEvent, useCallback, useEffect, useRef, useState} from 'react';
+import React, {FormEvent, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {collection, doc, getDoc} from 'firebase/firestore';
 import {Movie, Movies} from "../types";
 import {db} from "../firebase";
@@ -14,12 +14,28 @@ const Game: React.FC = () => {
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [revealedEntries, setRevealedEntries] = useState(1);
     const [gameOver, setGameOver] = useState(false);
-    const [feedback, setFeedback] = useState<string | null>(null);
+    const [guessesFeedback, setGuessesFeedback] = useState<string | null>(null);
+    const [gameFeedback, setGameFeedback] = useState<string | null>(null);
     const [previousGuesses, setPreviousGuesses] = useState<string[]>([]);
     const [title, setTitle] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const selectRandomMovie = useCallback((movieList: Movie[]) => {
+    const remainingEntries = useMemo(() => {
+        if (currentMovie && currentMovie.parentalGuideEntries) {
+            return currentMovie.parentalGuideEntries.length - revealedEntries;
+        }
+        return 0;
+    }, [currentMovie, revealedEntries]);
+
+    useEffect(() => {
+        setGuess('');
+    }, [revealedEntries]);
+
+    useEffect(() => {
+        setGuessesFeedback(`You have ${remainingEntries} more hints.`);
+    }, [remainingEntries]);
+
+    const setupGame = useCallback((movieList: Movie[]) => {
         // Filter movies with more than one parental guide entry
         const eligibleMovies = movieList.filter(movie => movie.parentalGuideEntries.length > 1);
 
@@ -37,8 +53,11 @@ const Game: React.FC = () => {
         setCurrentMovie(selectedMovie);
         setRevealedEntries(1);
         setGameOver(false);
-        setFeedback(null);
+        setGuessesFeedback(null);
+        setGameFeedback(null);
         setPreviousGuesses([]);
+        setTitle(`In which movie does this happen?`);
+        setGuess('');
     }, []);
 
     useEffect(() => {
@@ -50,8 +69,7 @@ const Game: React.FC = () => {
                 const movieList = (movieSnapshot.data() as Movies).movies
                 setMovies(movieList);
                 setMovieTitles(movieList.map(movie => `${movie.title} (${movie.year})`));
-                setGuess('');
-                selectRandomMovie(movieList);
+                setupGame(movieList);
             } catch (err) {
                 console.error('Error fetching movies:', err);
                 setError(`Failed to fetch movies: ${err instanceof Error ? err.message : String(err)}`);
@@ -59,21 +77,17 @@ const Game: React.FC = () => {
                 setLoading(false);
             }
         };
-
-        setTitle(`In which movie does this happen?`);
         fetchMovies();
-    }, [selectRandomMovie],);
+    }, [setupGame],);
 
     const startNewGame = () => {
-        setTitle(`In which movie does this happen?`);
-        selectRandomMovie(movies);
-        setGuess('');
+        setupGame(movies);
     };
 
     const handleGameOver = () => {
         setGameOver(true);
         setTitle(`Game Over 😵`);
-        setFeedback(`It was `);
+        setGameFeedback(`It was `);
     };
 
     const getIMDBLink = (movieId: string) => {
@@ -96,13 +110,13 @@ const Game: React.FC = () => {
 
         // Check if the guess is in the list of movie titles
         if (!movieTitles.map(title => title.toLowerCase()).includes(normalizedGuess)) {
-            setFeedback('Please select a movie from the suggestions.');
+            setGuessesFeedback('Please select a movie from the suggestions.');
             return;
         }
 
         // Check if the guess has already been made
         if (previousGuesses.map(g => g.toLowerCase()).includes(normalizedGuess)) {
-            setFeedback('You have already guessed that. Try something else!');
+            setGuessesFeedback('You have already guessed that. Try something else!');
             return;
         }
 
@@ -111,27 +125,18 @@ const Game: React.FC = () => {
         if (normalizedGuess === normalizedTitle) {
             setGameOver(true);
             setTitle(`Congratulations! 🎉`);
-            setFeedback(`You guessed correctly! It's `);
+            setGameFeedback(`You guessed correctly! It's `);
         } else {
-            const remainingGuesses = currentMovie.parentalGuideEntries.length - revealedEntries;
-            if (revealedEntries < currentMovie.parentalGuideEntries.length) {
-                setRevealedEntries(prevEntries => prevEntries + 1);
-                setFeedback(`Incorrect guess. You have ${remainingGuesses} more hints.`);
-                setPreviousGuesses(prev => [...prev, guess.trim()]);
-                setGuess('');
-            } else {
-                handleGameOver();
-            }
+            handleNextHint()
+            setPreviousGuesses(prev => [...prev, guess.trim()]);
         }
     };
 
     const handleNextHint = () => {
         if (!currentMovie) return;
 
-        const remainingGuesses = currentMovie.parentalGuideEntries.length - revealedEntries;
         if (revealedEntries < currentMovie.parentalGuideEntries.length) {
             setRevealedEntries(prevEntries => prevEntries + 1);
-            setFeedback(`You have ${remainingGuesses} more hints.`);
         } else {
             handleGameOver();
         }
@@ -159,12 +164,12 @@ const Game: React.FC = () => {
         }
     };
 
-    const renderFeedbackWithLink = () => {
+    const renderGameFeedbackWithLink = () => {
         if (!currentMovie) return null;
 
         return (
             <p className="mb-6 text-xl font-semibold">
-                {feedback}
+                {gameFeedback}
                 <a
                     href={getIMDBLink(currentMovie.imdbID)}
                     target="_blank"
@@ -199,9 +204,9 @@ const Game: React.FC = () => {
                             ))}
                         </ul>
                     </div>
-                    {feedback && !gameOver && (
+                    {guessesFeedback && !gameOver && (
                         <p className="mb-4 p-3 bg-yellow-400 text-black rounded-lg font-semibold">
-                            {feedback}
+                            {guessesFeedback}
                         </p>
                     )}
                     {previousGuesses.length > 0 && (
@@ -252,7 +257,8 @@ const Game: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={handleNextHint}
-                                className="flex-1 p-3 bg-gray-300 text-gray-700 rounded-lg font-bold hover:bg-gray-400 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                disabled={remainingEntries === 0}
+                                className="flex-1 p-3 bg-gray-300 text-gray-700 rounded-lg font-bold hover:bg-gray-400 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Next hint
                             </button>
@@ -268,7 +274,7 @@ const Game: React.FC = () => {
                 </>
             ) : (
                 <div className="text-center">
-                    {renderFeedbackWithLink()}
+                    {renderGameFeedbackWithLink()}
                     <button
                         onClick={startNewGame}
                         className="px-6 py-3 bg-yellow-400 text-black rounded-lg font-bold hover:bg-yellow-500 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-600"
