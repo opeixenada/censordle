@@ -49,14 +49,13 @@ const SeverityBadge: React.FC<SeverityBadgeProps> = ({entry}) => {
                 `}
                 onMouseEnter={() => setShowTooltip(true)}
                 onMouseLeave={() => setShowTooltip(false)}
-                title={tooltipText}
             >
                 {entry.category}
             </span>
             {showTooltip && (
                 <div
                     className="absolute z-10 px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm dark:bg-gray-700 -top-10 left-1/2 transform -translate-x-1/2 transition-opacity duration-300">
-                    {entry.severity}
+                    {tooltipText}
                     <div className="tooltip-arrow"/>
                 </div>
             )}
