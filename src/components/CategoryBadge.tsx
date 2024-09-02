@@ -13,19 +13,25 @@ type SeverityBadgeProps = {
 const SeverityBadge: React.FC<SeverityBadgeProps> = ({entry}) => {
     const [showTooltip, setShowTooltip] = useState(false);
 
-    const getSeverityColorClass = (severity: string): string => {
+    const getSeverityColor = (severity: string): string => {
         switch (severity.toLowerCase()) {
             case 'none':
-                return 'bg-green-300 text-green-800 ring-green-600/20';
+                return 'green';
             case 'mild':
-                return 'bg-yellow-300 text-yellow-800 ring-yellow-600/20';
+                return 'yellow';
             case 'moderate':
-                return 'bg-orange-300 text-orange-800 ring-orange-600/20';
+                return 'orange';
             case 'severe':
-                return 'bg-red-300 text-red-800 ring-red-600/20';
+                return 'red';
             default:
-                return 'bg-gray-300 text-gray-800 ring-gray-600/20';
+                return 'gray';
         }
+    };
+
+
+    const getSeverityColorClass = (severity: string): string => {
+        const color = getSeverityColor(severity)
+        return `bg-${color}-300 text-${color}-800 ring-${color}-600/20`;
     };
 
     const tooltipText = entry.severity || "Severity unknown";
