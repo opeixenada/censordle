@@ -3,16 +3,23 @@ import * as serviceAccount from '../.firebase/serviceAccountKey.json';
 import * as fs from 'fs';
 import * as path from 'path';
 
-interface ParentalGuideEntry {
+type AdvisoryEntry = {
     category: string;
+    severity: string;
     description: string;
-}
+};
 
-interface Movie {
+type Movie = {
+    imdbID: string;
     title: string;
-    year: number;
-    parentalGuideEntries: ParentalGuideEntry[];
-}
+    year: string;
+    director: string | null;
+    parentalGuideEntries: AdvisoryEntry[];
+};
+
+type TitleMapping = {
+    [key: string]: string;  // key is "title (year)", value is documentId
+};
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount as admin.ServiceAccount)
@@ -33,19 +40,38 @@ const loadMoviesFromFiles = (): Movie[] => {
     return movies;
 };
 
-async function populateFirestore(): Promise<void> {
-    const movies = {
-        "movies": loadMoviesFromFiles()
-    };
+const getDocumentId = (movie: Movie): string => {
+    return `${movie.title.replace(/[^a-zA-Z0-9]/g, '_')}_${movie.year}_${movie.imdbID}`;
+};
 
-    try {
-        const documentId = "movies";
-        const docRef = db.collection('movies').doc(documentId);
-        await docRef.set(movies)
-        console.log(`Updated ${documentId}`);
-    } catch (error) {
-        console.error(`Error updating movies`, error);
+async function populateFirestore(): Promise<void> {
+    const movies = loadMoviesFromFiles();
+    const movieMapping: TitleMapping = {};
+
+    for (const movie of movies) {
+        try {
+            const documentId = getDocumentId(movie);
+            const docRef = db.collection('movies').doc(documentId);
+            await docRef.set(movie);  // This will overwrite the document if it exists
+            console.log(`Updated ${documentId}`);
+
+            // Add to movieMapping
+            const mappingKey = `${movie.title} (${movie.year})`;
+            movieMapping[mappingKey] = documentId;
+        } catch (error) {
+            console.error(`Error updating ${movie.title}:`, error);
+        }
     }
+
+    // Create or update the title mapping document
+    try {
+        const mappingDocRef = db.collection('metadata').doc('titleMapping');
+        await mappingDocRef.set(movieMapping);
+        console.log('Updated title mapping document');
+    } catch (error) {
+        console.error('Error updating movie mapping document:', error);
+    }
+
     console.log('Database population completed!');
 }
 
