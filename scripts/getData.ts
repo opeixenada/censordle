@@ -53,6 +53,7 @@ const fetchHTML = async (url: string): Promise<string> => {
     }
 };
 
+// TODO: handle multiple directors
 function extractDirector(html: string): string | null {
     const $ = cheerio.load(html);
 
