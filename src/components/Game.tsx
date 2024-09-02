@@ -70,11 +70,10 @@ const Game: React.FC = () => {
         setGuess('');
     };
 
-    const giveUp = () => {
+    const handleGameOver = () => {
         setGameOver(true);
         setTitle(`Game Over 😵`);
         setFeedback(`It was `);
-        setGuess('');
     };
 
     const getIMDBLink = (movieId: string) => {
@@ -119,13 +118,11 @@ const Game: React.FC = () => {
                 setRevealedEntries(prevEntries => prevEntries + 1);
                 setFeedback(`Incorrect guess. You have ${remainingGuesses} more hints.`);
                 setPreviousGuesses(prev => [...prev, guess.trim()]);
+                setGuess('');
             } else {
-                setGameOver(true);
-                setTitle(`Game Over 😵`);
-                setFeedback(`It was `);
+                handleGameOver();
             }
         }
-        setGuess('');
     };
 
     const handleNextHint = () => {
@@ -136,11 +133,8 @@ const Game: React.FC = () => {
             setRevealedEntries(prevEntries => prevEntries + 1);
             setFeedback(`You have ${remainingGuesses} more hints.`);
         } else {
-            setGameOver(true);
-            setTitle(`Game Over 😵`);
-            setFeedback(`It was `);
+            handleGameOver();
         }
-        setGuess('');
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -264,7 +258,7 @@ const Game: React.FC = () => {
                             </button>
                             <button
                                 type="button"
-                                onClick={giveUp}
+                                onClick={handleGameOver}
                                 className="flex-1 p-3 bg-gray-300 text-gray-700 rounded-lg font-bold hover:bg-gray-400 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500"
                             >
                                 Give up
