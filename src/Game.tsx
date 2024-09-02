@@ -70,6 +70,13 @@ const Game: React.FC = () => {
         setGuess('');
     };
 
+    const giveUp = () => {
+        setGameOver(true);
+        setTitle(`Game Over 😵`);
+        setFeedback(`It was `);
+        setGuess('');
+    };
+
     const getIMDBLink = (movieId: string) => {
         return `https://www.imdb.com/title/${movieId}/`;
     };
@@ -121,13 +128,13 @@ const Game: React.FC = () => {
         setGuess('');
     };
 
-    const handleSkipHint = () => {
+    const handleNextHint = () => {
         if (!currentMovie) return;
 
         const remainingGuesses = currentMovie.parentalGuideEntries.length - revealedEntries;
         if (revealedEntries < currentMovie.parentalGuideEntries.length) {
             setRevealedEntries(prevEntries => prevEntries + 1);
-            setFeedback(`Skipped. You have ${remainingGuesses} more hints.`);
+            setFeedback(`You have ${remainingGuesses} more hints.`);
         } else {
             setGameOver(true);
             setTitle(`Game Over 😵`);
@@ -250,17 +257,17 @@ const Game: React.FC = () => {
                             </button>
                             <button
                                 type="button"
-                                onClick={handleSkipHint}
+                                onClick={handleNextHint}
                                 className="flex-1 p-3 bg-gray-300 text-gray-700 rounded-lg font-bold hover:bg-gray-400 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500"
                             >
                                 Next hint
                             </button>
                             <button
                                 type="button"
-                                onClick={startNewGame}
+                                onClick={giveUp}
                                 className="flex-1 p-3 bg-gray-300 text-gray-700 rounded-lg font-bold hover:bg-gray-400 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500"
                             >
-                                Start new game
+                                Give up
                             </button>
                         </div>
                     </form>
