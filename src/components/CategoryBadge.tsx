@@ -1,10 +1,5 @@
 import React, {useState} from 'react';
-
-export interface ParentalGuideEntry {
-    category: string;
-    severity: string;
-    description: string;
-}
+import {ParentalGuideEntry} from "../types";
 
 type SeverityBadgeProps = {
     entry: ParentalGuideEntry;

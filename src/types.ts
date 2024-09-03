@@ -11,6 +11,6 @@ export interface Movie {
     parentalGuideEntries: ParentalGuideEntry[];
 }
 
-export interface Movies {
-    movies: Movie[];
+export interface TitleMapping {
+    [key: string]: string;  // key is "title (year)", value is documentId
 }

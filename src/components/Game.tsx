@@ -1,87 +1,118 @@
 import React, {FormEvent, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {collection, doc, getDoc} from 'firebase/firestore';
-import {Movie, Movies} from "../types";
+import {Movie, TitleMapping} from "../types";
 import {db} from "../firebase";
 import CategoryBadge from "./CategoryBadge";
 
 const Game: React.FC = () => {
-    const [movies, setMovies] = useState<Movie[]>([]);
-    const [movieTitles, setMovieTitles] = useState<string[]>([]);
-    const [currentMovie, setCurrentMovie] = useState<Movie | null>(null);
+    // Data and loading state
+    const [titleMapping, setTitleMapping] = useState<TitleMapping | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // Game state
+    const [gameOver, setGameOver] = useState(false);
+    const [currentMovie, setCurrentMovie] = useState<Movie | null>(null);
+    const [revealedEntriesCount, setRevealedEntriesCount] = useState(1);
+    const [previousGuesses, setPreviousGuesses] = useState<string[]>([]);
+
+    // User input and feedback
     const [guess, setGuess] = useState('');
     const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [revealedEntries, setRevealedEntries] = useState(1);
-    const [gameOver, setGameOver] = useState(false);
     const [guessesFeedback, setGuessesFeedback] = useState<string | null>(null);
     const [gameFeedback, setGameFeedback] = useState<string | null>(null);
-    const [previousGuesses, setPreviousGuesses] = useState<string[]>([]);
-    const [title, setTitle] = useState<string | null>(null);
+
+    // UI state
+    const [title, setTitle] = useState<string>('In which movie does this happen?');
     const inputRef = useRef<HTMLInputElement>(null);
 
     const remainingEntries = useMemo(() => {
-        if (currentMovie && currentMovie.parentalGuideEntries) {
-            return currentMovie.parentalGuideEntries.length - revealedEntries;
+        return currentMovie?.parentalGuideEntries?.length
+            ? currentMovie.parentalGuideEntries.length - revealedEntriesCount
+            : 0;
+    }, [currentMovie, revealedEntriesCount]);
+
+    const fetchTitleMapping = useCallback(async () => {
+        try {
+            const titleMappingDocRef = doc(collection(db, 'metadata'), 'titleMapping');
+
+            console.log(`Fetching titleMapping`);
+            const titleMappingDoc = await getDoc(titleMappingDocRef);
+            setTitleMapping(titleMappingDoc.data() as TitleMapping);
+        } catch (err) {
+            console.error(`Error fetching title mapping:`, err);
+            setError(`Failed to fetch movies: ${err instanceof Error ? err.message : String(err)}`);
+        } finally {
+            setLoading(false);
         }
-        return 0;
-    }, [currentMovie, revealedEntries]);
-
-    useEffect(() => {
-        setGuess('');
-    }, [revealedEntries]);
-
-    useEffect(() => {
-        setGuessesFeedback(`You have ${remainingEntries} more hints.`);
-    }, [remainingEntries]);
-
-    const setupGame = useCallback((movieList: Movie[]) => {
-        // Filter movies with more than one parental guide entry
-        const eligibleMovies = movieList.filter(movie => movie.parentalGuideEntries.length > 1);
-
-        if (eligibleMovies.length === 0) {
-            console.warn("No movies with more than one parental guide entry found.");
-            return;
-        }
-
-        const randomIndex = Math.floor(Math.random() * eligibleMovies.length);
-        const selectedMovie = eligibleMovies[randomIndex];
-
-        // Shuffle the parental guide entries
-        selectedMovie.parentalGuideEntries = shuffleArray(selectedMovie.parentalGuideEntries);
-
-        setCurrentMovie(selectedMovie);
-        setRevealedEntries(1);
-        setGameOver(false);
-        setGuessesFeedback(null);
-        setGameFeedback(null);
-        setPreviousGuesses([]);
-        setTitle(`In which movie does this happen?`);
-        setGuess('');
     }, []);
 
     useEffect(() => {
-        const fetchMovies = async () => {
+        fetchTitleMapping();
+    }, [fetchTitleMapping]);
+
+    const selectMovie = useCallback(async () => {
+        if (!titleMapping) return null;
+
+        const keys = Object.keys(titleMapping);
+        if (keys.length === 0) return null;
+
+        let fetchedMovie: Movie | null = null;
+
+        // Loop until a movie with at least 2 parental guide entries is found
+        while (!fetchedMovie || fetchedMovie.parentalGuideEntries.length < 2) {
+            const randomKey = keys[Math.floor(Math.random() * keys.length)];
+            const movieId = titleMapping[randomKey];
+
             try {
-                const moviesCollection = collection(db, 'movies');
-                const moviesDocRef = doc(moviesCollection, 'movies');
-                const movieSnapshot = await getDoc(moviesDocRef);
-                const movieList = (movieSnapshot.data() as Movies).movies
-                setMovies(movieList);
-                setMovieTitles(movieList.map(movie => `${movie.title} (${movie.year})`));
-                setupGame(movieList);
-            } catch (err) {
-                console.error('Error fetching movies:', err);
-                setError(`Failed to fetch movies: ${err instanceof Error ? err.message : String(err)}`);
-            } finally {
-                setLoading(false);
+                const movieDocRef = doc(collection(db, 'movies'), movieId);
+
+                console.log(`Fetching movie: ${movieId}`);
+                const movieDoc = await getDoc(movieDocRef);
+                fetchedMovie = movieDoc.exists() ? (movieDoc.data() as Movie) : null;
+            } catch (error) {
+                console.error(`Error fetching random movie:`, error);
+                return null;
             }
-        };
-        fetchMovies();
-    }, [setupGame],);
+        }
+
+        // Set the fetched movie with shuffled parental guide entries
+        if (fetchedMovie) {
+            setCurrentMovie({
+                ...fetchedMovie,
+                parentalGuideEntries: shuffleArray([...fetchedMovie.parentalGuideEntries]),
+            });
+        }
+    }, [titleMapping]);
+
+    // This effect will run:
+    // - After the initial render
+    // - Whenever `titleMapping` changes, which causes `selectMovie` to be recreated
+    useEffect(() => {
+        selectMovie();
+    }, [selectMovie]);
+
+    useEffect(() => {
+        setGuess('');
+        setGuessesFeedback(`You have ${remainingEntries} more hints.`);
+    }, [revealedEntriesCount, remainingEntries]);
+
+    useEffect(() => {
+        resetGameState();
+    }, [currentMovie]);
+
+    const resetGameState = () => {
+        setGameOver(false);
+        setTitle(`In which movie does this happen?`);
+        setGuess('');
+        setRevealedEntriesCount(1);
+        setGuessesFeedback(null);
+        setGameFeedback(null);
+        setPreviousGuesses([]);
+    };
 
     const startNewGame = () => {
-        setupGame(movies);
+        selectMovie();
     };
 
     const handleGameOver = () => {
@@ -90,53 +121,47 @@ const Game: React.FC = () => {
         setGameFeedback(`It was `);
     };
 
-    const getIMDBLink = (movieId: string) => {
-        return `https://www.imdb.com/title/${movieId}/`;
-    };
+    const getIMDBLink = (movieId: string) => `https://www.imdb.com/title/${movieId}/`;
 
     const shuffleArray = <T, >(array: T[]): T[] => {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
+        return array.sort(() => Math.random() - 0.5);
     };
 
     const handleGuess = (e?: FormEvent) => {
         e?.preventDefault();
-        if (!currentMovie || guess.trim() === '') return;
+        if (!currentMovie || !titleMapping || guess.trim() === '') return;
 
-        const normalizedGuess = guess.trim().toLowerCase();
+        const normalizedGuess = guess.trim();
 
         // Check if the guess is in the list of movie titles
-        if (!movieTitles.map(title => title.toLowerCase()).includes(normalizedGuess)) {
-            setGuessesFeedback('Please select a movie from the suggestions.');
+        if (!(normalizedGuess in titleMapping)) {
+            setGuessesFeedback(`Please select a movie from the suggestions.`);
             return;
         }
 
         // Check if the guess has already been made
-        if (previousGuesses.map(g => g.toLowerCase()).includes(normalizedGuess)) {
-            setGuessesFeedback('You have already guessed that. Try something else!');
+        if (previousGuesses.includes(normalizedGuess)) {
+            setGuessesFeedback(`You have already guessed that. Try something else!`);
             return;
         }
 
-        const normalizedTitle = `${currentMovie.title.toLowerCase()} (${currentMovie.year})`;
+        const normalizedTitle = `${currentMovie.title} (${currentMovie.year})`;
 
         if (normalizedGuess === normalizedTitle) {
             setGameOver(true);
             setTitle(`Congratulations! 🎉`);
             setGameFeedback(`You guessed correctly! It's `);
         } else {
-            handleNextHint()
-            setPreviousGuesses(prev => [...prev, guess.trim()]);
+            handleNextHint();
+            setPreviousGuesses(prev => [...prev, normalizedGuess]);
         }
     };
 
     const handleNextHint = () => {
         if (!currentMovie) return;
 
-        if (revealedEntries < currentMovie.parentalGuideEntries.length) {
-            setRevealedEntries(prevEntries => prevEntries + 1);
+        if (revealedEntriesCount < currentMovie.parentalGuideEntries.length) {
+            setRevealedEntriesCount(prevEntries => prevEntries + 1);
         } else {
             handleGameOver();
         }
@@ -146,11 +171,11 @@ const Game: React.FC = () => {
         const value = e.target.value;
         setGuess(value);
 
-        if (value.length > 1) {
-            const filteredSuggestions = movieTitles.filter(
-                title => title.toLowerCase().includes(value.toLowerCase())
-            );
-            setSuggestions(filteredSuggestions.slice(0, 5)); // Limit to 5 suggestions
+        if (value.length > 1 && titleMapping) {
+            const filteredSuggestions = Object.keys(titleMapping)
+                .filter(key => key.toLowerCase().includes(value.toLowerCase()))
+                .slice(0, 5); // Limit to 5 suggestions
+            setSuggestions(filteredSuggestions);
         } else {
             setSuggestions([]);
         }
@@ -159,9 +184,7 @@ const Game: React.FC = () => {
     const handleSuggestionClick = (suggestion: string) => {
         setGuess(suggestion);
         setSuggestions([]);
-        if (inputRef.current) {
-            inputRef.current.focus();
-        }
+        inputRef.current?.focus();
     };
 
     const renderGameFeedbackWithLink = () => {
@@ -184,8 +207,8 @@ const Game: React.FC = () => {
     };
 
     if (loading) return <div className="text-center p-4 text-gray-700">Loading...</div>;
+    if (!currentMovie) return <div className="text-center p-4 text-gray-700">Selecting a movie...</div>;
     if (error) return <div className="text-center p-4 text-red-600">{error}</div>;
-    if (!currentMovie) return <div className="text-center p-4 text-gray-700">No movie selected</div>;
 
     return (
         <div className="max-w-2xl mx-auto mt-4 p-8 bg-white text-gray-800 rounded-lg shadow-2xl">
@@ -194,7 +217,7 @@ const Game: React.FC = () => {
                 <>
                     <div className="mb-6 bg-gray-100 p-6 rounded-lg shadow-inner">
                         <ul className="space-y-3">
-                            {currentMovie.parentalGuideEntries.slice(0, revealedEntries).map((entry, index) => (
+                            {currentMovie.parentalGuideEntries.slice(0, revealedEntriesCount).map((entry, index) => (
                                 <li key={index} className="text-base leading-relaxed">
                                     <CategoryBadge entry={entry}/>
                                     <span>
@@ -204,14 +227,14 @@ const Game: React.FC = () => {
                             ))}
                         </ul>
                     </div>
-                    {guessesFeedback && !gameOver && (
+                    {guessesFeedback && (
                         <p className="mb-4 p-3 bg-yellow-400 text-black rounded-lg font-semibold">
                             {guessesFeedback}
                         </p>
                     )}
                     {previousGuesses.length > 0 && (
                         <div className="mb-6">
-                            <h4 className="font-semibold text-gray-700 mb-2">Previous Guesses:</h4>
+                            <h4 className="font-semibold text-gray-700 mb-2">Previous guesses:</h4>
                             <div className="flex flex-wrap gap-2">
                                 {previousGuesses.map((prevGuess, index) => (
                                     <span key={index}
@@ -250,7 +273,7 @@ const Game: React.FC = () => {
                             <button
                                 type="submit"
                                 className="flex-1 p-3 bg-yellow-400 text-black rounded-lg font-bold hover:bg-yellow-500 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                                disabled={guess.trim() === '' || !movieTitles.includes(guess)}
+                                disabled={guess.trim() === '' || (titleMapping != null && !(guess in titleMapping))}
                             >
                                 Submit guess
                             </button>
