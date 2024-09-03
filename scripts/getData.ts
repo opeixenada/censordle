@@ -140,9 +140,9 @@ const extractParentalGuideInfo = (html: string): ParentalGuideData => {
     };
 };
 
-const saveMovieInfo = (movieInfo: Movie) => {
+const saveMovie = (movie: Movie) => {
     const directory = path.join(__dirname, 'scraped_data');
-    const fileName = `${movieInfo.title.replace(/[^a-zA-Z0-9]/g, '_')}_${movieInfo.year}.json`; // Replace non-alphanumeric characters with underscores
+    const fileName = `${movie.title.replace(/[^a-zA-Z0-9]/g, '_')}_${movie.year}.json`; // Replace non-alphanumeric characters with underscores
     const filePath = path.join(directory, fileName);
 
     // Ensure the directory exists
@@ -151,7 +151,7 @@ const saveMovieInfo = (movieInfo: Movie) => {
     }
 
     // Save the JSON data to a file
-    fs.writeFileSync(filePath, JSON.stringify(movieInfo, null, 2));
+    fs.writeFileSync(filePath, JSON.stringify(movie, null, 2));
     console.log(`Data saved to ${filePath}`);
 };
 
@@ -220,7 +220,7 @@ const processMovie = async (movieTitle: string) => {
         const parentalGuideInfo = extractParentalGuideInfo(parentalGuideHtml);
 
         // Save the extracted movie info to a file
-        saveMovieInfo({
+        saveMovie({
             imdbID: movieId,
             title: parentalGuideInfo.title,
             year: parentalGuideInfo.year,
