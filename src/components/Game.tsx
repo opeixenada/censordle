@@ -35,8 +35,6 @@ const Game: React.FC = () => {
     const fetchTitleMapping = useCallback(async () => {
         try {
             const titleMappingDocRef = doc(collection(db, 'metadata'), 'titleMapping');
-
-            console.log(`Fetching titleMapping`);
             const titleMappingDoc = await getDoc(titleMappingDocRef);
             setTitleMapping(titleMappingDoc.data() as TitleMapping);
         } catch (err) {
@@ -66,8 +64,6 @@ const Game: React.FC = () => {
 
             try {
                 const movieDocRef = doc(collection(db, 'movies'), movieId);
-
-                console.log(`Fetching movie: ${movieId}`);
                 const movieDoc = await getDoc(movieDocRef);
                 fetchedMovie = movieDoc.exists() ? (movieDoc.data() as Movie) : null;
             } catch (error) {
