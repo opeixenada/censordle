@@ -7,8 +7,8 @@ words, players try to identify movies based on their parental guide entries from
 
 ### Prerequisites
 
-- Node.js (v14 or later recommended)
-- npm or yarn
+- Node.js (v22 or later recommended)
+- npm
 - Firebase account and project
 
 ### Installation
@@ -22,10 +22,6 @@ words, players try to identify movies based on their parental guide entries from
 2. Install dependencies:
    ```
    npm install
-   ```
-   or
-   ```
-   yarn install
    ```
 
 3. Set up your Firebase configuration:
@@ -43,10 +39,6 @@ words, players try to identify movies based on their parental guide entries from
 4. Start the development server:
    ```
    npm start
-   ```
-   or
-   ```
-   yarn start
    ```
 
 5. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
