@@ -47,7 +47,7 @@
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@types/cheerio": "^0.22.35",
-    "@types/node": "^22.5.1",
+    "@types/node": "^22.5.3",
     "autoprefixer": "^10.4.20",
     "firebase-admin": "^12.4.0",
     "gh-pages": "^6.1.1",
