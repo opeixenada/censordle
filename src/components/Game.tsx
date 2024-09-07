@@ -1,4 +1,4 @@
-import React, {FormEvent, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {collection, doc, getDoc} from 'firebase/firestore';
 import {Movie, TitleMapping} from "../types";
 import {db} from "../firebase";
@@ -123,36 +123,6 @@ const Game: React.FC = () => {
         return array.sort(() => Math.random() - 0.5);
     };
 
-    const handleGuess = (e?: FormEvent) => {
-        e?.preventDefault();
-        if (!currentMovie || !titleMapping || guess.trim() === '') return;
-
-        const normalizedGuess = guess.trim();
-
-        // Check if the guess is in the list of movie titles
-        if (!(normalizedGuess in titleMapping)) {
-            setGuessesFeedback(`Please select a movie from the suggestions.`);
-            return;
-        }
-
-        // Check if the guess has already been made
-        if (previousGuesses.includes(normalizedGuess)) {
-            setGuessesFeedback(`You have already guessed that. Try something else!`);
-            return;
-        }
-
-        const normalizedTitle = `${currentMovie.title} (${currentMovie.year})`;
-
-        if (normalizedGuess === normalizedTitle) {
-            setGameOver(true);
-            setTitle(`Congratulations! 🎉`);
-            setGameFeedback(`You guessed correctly! It's `);
-        } else {
-            handleNextHint();
-            setPreviousGuesses(prev => [...prev, normalizedGuess]);
-        }
-    };
-
     const handleNextHint = () => {
         if (!currentMovie) return;
 
@@ -178,9 +148,34 @@ const Game: React.FC = () => {
     };
 
     const handleSuggestionClick = (suggestion: string) => {
-        setGuess(suggestion);
         setSuggestions([]);
-        inputRef.current?.focus();
+
+        if (!currentMovie || !titleMapping || suggestion.trim() === '') return;
+
+        const normalizedGuess = suggestion.trim();
+
+        // Check if the guess is in the list of movie titles
+        if (!(normalizedGuess in titleMapping)) {
+            setGuessesFeedback(`Please select a movie from the suggestions.`);
+            return;
+        }
+
+        // Check if the guess has already been made
+        if (previousGuesses.includes(normalizedGuess)) {
+            setGuessesFeedback(`You have already guessed that. Try something else!`);
+            return;
+        }
+
+        const normalizedTitle = `${currentMovie.title} (${currentMovie.year})`;
+
+        if (normalizedGuess === normalizedTitle) {
+            setGameOver(true);
+            setTitle(`Congratulations! 🎉`);
+            setGameFeedback(`You guessed correctly! It's `);
+        } else {
+            handleNextHint();
+            setPreviousGuesses(prev => [...prev, normalizedGuess]);
+        }
     };
 
     const renderGameFeedbackWithLink = () => {
@@ -241,7 +236,7 @@ const Game: React.FC = () => {
                             </div>
                         </div>
                     )}
-                    <form onSubmit={handleGuess} className="mt-6">
+                    <form className="mt-6">
                         <div className="relative">
                             <input
                                 ref={inputRef}
@@ -267,17 +262,10 @@ const Game: React.FC = () => {
                         </div>
                         <div className="flex gap-4 mt-4">
                             <button
-                                type="submit"
-                                className="flex-1 p-3 bg-yellow-400 text-black rounded-lg font-bold hover:bg-yellow-500 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                                disabled={guess.trim() === '' || (titleMapping != null && !(guess in titleMapping))}
-                            >
-                                Submit guess
-                            </button>
-                            <button
                                 type="button"
                                 onClick={handleNextHint}
                                 disabled={remainingEntries === 0}
-                                className="flex-1 p-3 bg-gray-300 text-gray-700 rounded-lg font-bold hover:bg-gray-400 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex-1 p-3 bg-yellow-400 text-black rounded-lg font-bold hover:bg-yellow-500 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Next hint
                             </button>

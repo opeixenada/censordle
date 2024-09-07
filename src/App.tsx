@@ -16,7 +16,7 @@ const App: React.FC = () => {
             </main>
             <footer className="bg-gray-800 text-gray-400 text-sm p-4 mt-12">
                 <div className="container mx-auto text-center">
-                    © {currentYear} Censordle
+                    {currentYear} Censordle
                 </div>
             </footer>
         </div>
