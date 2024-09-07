@@ -14,14 +14,15 @@
     "axios": "^1.7.7",
     "cheerio": "^1.0.0",
     "firebase": "^10.13.1",
+    "next": "^14.2.8",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-scripts": "5.0.1",
     "web-vitals": "^4.2.3"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "npx serve@latest ./build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",

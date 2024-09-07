@@ -39,3 +39,7 @@ Thumbs.db
 scraped_data/
 scripts_data/
 processed_data/
+
+# Next.js
+.next
+next-env.d.ts
