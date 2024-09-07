@@ -5,7 +5,6 @@
   "private": true,
   "dependencies": {
     "@anthropic-ai/sdk": "^0.27.2",
-    "@testing-library/user-event": "^14.5.2",
     "@types/jest": "^29.5.12",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
@@ -14,22 +13,16 @@
     "firebase": "^10.13.1",
     "next": "^14.2.8",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "web-vitals": "^4.2.3"
+    "react-dom": "^18.3.1"
   },
   "scripts": {
     "lint": "next lint",
     "dev": "next dev",
     "build": "next build",
-    "start": "npx serve@latest ./build",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
     "test": "jest",
     "test:watch": "jest --watch"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@babel/preset-react": "^7.24.7",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.5.0",
     "@testing-library/react": "^16.0.1",
@@ -42,9 +35,7 @@
     "gh-pages": "^6.1.1",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "postcss": "^8.4.45",
     "tailwindcss": "^3.4.10",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
+    "typescript": "^5.4.3"
   }
 }

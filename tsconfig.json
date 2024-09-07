@@ -29,7 +29,7 @@
   "include": [
     "src",
     "scripts",
-    "./build/types/**/*.ts"
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"
