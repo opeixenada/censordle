@@ -139,7 +139,7 @@ const Game: React.FC = () => {
 
         if (value.length > 1 && titleMapping) {
             const filteredSuggestions = Object.keys(titleMapping)
-                .filter(key => key.toLowerCase().includes(value.toLowerCase()))
+                .filter(key => key.toLowerCase().includes(value.toLowerCase()) && !previousGuesses.includes(key))
                 .slice(0, 5); // Limit to 5 suggestions
             setSuggestions(filteredSuggestions);
         } else {
