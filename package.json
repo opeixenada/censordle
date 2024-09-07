@@ -19,9 +19,6 @@
     "lint": "next lint",
     "dev": "next dev",
     "build": "next build",
-    "start": "npx serve@latest ./build",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
     "test": "jest",
     "test:watch": "jest --watch"
   },
