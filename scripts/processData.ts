@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import Anthropic from '@anthropic-ai/sdk';
-import {text} from "node:stream/consumers";
 
 type ParentalGuideEntry = {
     category: string;
