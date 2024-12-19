@@ -1,18 +1,7 @@
-const isGithubActions = process.env.GITHUB_ACTIONS || false
-
-let assetPrefix = ''
-let basePath = ''
-
-if (isGithubActions) {
-    assetPrefix = `/censordle/`
-    basePath = `/censordle`
-}
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    output: "export",
-    assetPrefix: assetPrefix,
-    basePath: basePath,
+    output: 'export',
+    basePath: '',
     images: {
         unoptimized: true,
     },
