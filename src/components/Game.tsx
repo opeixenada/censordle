@@ -277,7 +277,7 @@ const Game: React.FC = () => {
                 className="w-full rounded-lg border border-gray-300 bg-white p-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:outline-none"
               />
               {suggestions.length > 0 && (
-                <ul className="absolute z-10 mt-[-1px] max-h-60 w-full overflow-auto rounded-b-lg border border-gray-300 bg-white shadow-lg">
+                <ul className="absolute z-10 -mt-px max-h-60 w-full overflow-auto rounded-b-lg border border-gray-300 bg-white shadow-lg">
                   {suggestions.map((suggestion, index) => (
                     <li
                       key={index}
