@@ -51,9 +51,7 @@ Please provide the processed movie data in JSON format. Don't return any other t
     if (content[0].type === "text") {
       return JSON.parse(content[0].text);
     } else {
-      console.error(
-        `Unexpected content type for movie ${movie.title}: ${content[0].type}`,
-      );
+      console.error(`Unexpected content type for movie ${movie.title}: ${content[0].type}`);
       return null;
     }
   } catch (error) {

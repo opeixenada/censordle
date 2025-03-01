@@ -59,14 +59,11 @@ function extractDirector(html: string): string | null {
 
   // Find the list item with the "Director" label
   const directorItem = $('li[data-testid="title-pc-principal-credit"]').filter(
-    (_, el) =>
-      $(el).find(".ipc-metadata-list-item__label").text().trim() === "Director",
+    (_, el) => $(el).find(".ipc-metadata-list-item__label").text().trim() === "Director",
   );
 
   // Extract the director's name from the anchor tag within this item
-  const directorName = directorItem
-    .find("a.ipc-metadata-list-item__list-content-item")
-    .html();
+  const directorName = directorItem.find("a.ipc-metadata-list-item__list-content-item").html();
 
   return directorName || null;
 }
@@ -92,15 +89,9 @@ const extractParentalGuideInfo = (html: string): ParentalGuideData => {
   const $ = cheerio.load(html); // Load the HTML content into Cheerio
 
   // Extract the movie title and year from the specified structure
-  const titleElement = $(
-    'div.subpage_title_block__right-column h3[itemprop="name"] a',
-  ).first();
+  const titleElement = $('div.subpage_title_block__right-column h3[itemprop="name"] a').first();
   const title = titleElement.text().trim();
-  const year = titleElement
-    .next("span.nobr")
-    .text()
-    .trim()
-    .replace(/[()]/g, "");
+  const year = titleElement.next("span.nobr").text().trim().replace(/[()]/g, "");
 
   // Step 1: Extract all categories and severities
   const categorySeverities: { [key: string]: string } = {};
@@ -108,11 +99,7 @@ const extractParentalGuideInfo = (html: string): ParentalGuideData => {
   $('section[id^="advisory-"]')
     .not("#advisory-spoilers")
     .each((_, section) => {
-      const category = $(section)
-        .find("h4.ipl-list-title")
-        .first()
-        .text()
-        .trim();
+      const category = $(section).find("h4.ipl-list-title").first().text().trim();
       const severity = $(section)
         .find(".advisory-severity-vote__container .ipl-status-pill")
         .first()
@@ -130,11 +117,7 @@ const extractParentalGuideInfo = (html: string): ParentalGuideData => {
   $('section[id^="advisory-"]')
     .not("#advisory-spoilers")
     .each((_, section) => {
-      const category = $(section)
-        .find("h4.ipl-list-title")
-        .first()
-        .text()
-        .trim();
+      const category = $(section).find("h4.ipl-list-title").first().text().trim();
       const severity = categorySeverities[category] || "Unknown"; // Default to 'Unknown' if severity isn't found
 
       $(section)
@@ -242,9 +225,7 @@ const processMovie = async (movieTitle: string) => {
   }
 };
 
-async function readMovieTitlesFromDirectory(
-  dirPath: string,
-): Promise<string[]> {
+async function readMovieTitlesFromDirectory(dirPath: string): Promise<string[]> {
   const files = fs.readdirSync(dirPath);
   const movieTitles: string[] = [];
 
@@ -267,9 +248,7 @@ const main = async () => {
   const inputDirPath = process.argv[2]; // Get the input directory path from the command line argument
 
   if (!inputDirPath) {
-    console.error(
-      "Please provide a path to the input directory as the first argument",
-    );
+    console.error("Please provide a path to the input directory as the first argument");
     process.exit(1);
   }
 
@@ -281,9 +260,7 @@ const main = async () => {
       process.exit(1);
     }
 
-    console.log(
-      `Found ${movieTitles.length} movie titles in the input directory`,
-    );
+    console.log(`Found ${movieTitles.length} movie titles in the input directory`);
 
     for (const title of movieTitles) {
       await processMovie(title);

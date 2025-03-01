@@ -35,8 +35,7 @@ const eslintConfig = [
         "warn",
         {
           // Check for arbitrary values that might need updating in Tailwind v4
-          selector:
-            "JSXAttribute[name.name='className'][value.value=/\\[.*?\\]/]",
+          selector: "JSXAttribute[name.name='className'][value.value=/\\[.*?\\]/]",
           message: "Check Tailwind arbitrary values for v4 compatibility",
         },
       ],

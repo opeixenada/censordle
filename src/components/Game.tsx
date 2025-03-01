@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { collection, doc, getDoc } from "firebase/firestore";
 import { Movie, TitleMapping } from "../types";
 import { db } from "../firebase";
@@ -29,9 +23,7 @@ const Game: React.FC = () => {
   const [gameFeedback, setGameFeedback] = useState<string | null>(null);
 
   // UI state
-  const [title, setTitle] = useState<string>(
-    "In which movie does this happen?",
-  );
+  const [title, setTitle] = useState<string>("In which movie does this happen?");
   const inputRef = useRef<HTMLInputElement>(null);
 
   const remainingEntries = useMemo(() => {
@@ -42,17 +34,12 @@ const Game: React.FC = () => {
 
   const fetchTitleMapping = useCallback(async () => {
     try {
-      const titleMappingDocRef = doc(
-        collection(db, "metadata"),
-        "titleMapping",
-      );
+      const titleMappingDocRef = doc(collection(db, "metadata"), "titleMapping");
       const titleMappingDoc = await getDoc(titleMappingDocRef);
       setTitleMapping(titleMappingDoc.data() as TitleMapping);
     } catch (err) {
       console.error(`Error fetching title mapping:`, err);
-      setError(
-        `Failed to fetch movies: ${err instanceof Error ? err.message : String(err)}`,
-      );
+      setError(`Failed to fetch movies: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setLoading(false);
     }
@@ -89,9 +76,7 @@ const Game: React.FC = () => {
     if (fetchedMovie) {
       setCurrentMovie({
         ...fetchedMovie,
-        parentalGuideEntries: shuffleArray([
-          ...fetchedMovie.parentalGuideEntries,
-        ]),
+        parentalGuideEntries: shuffleArray([...fetchedMovie.parentalGuideEntries]),
       });
     }
   }, [titleMapping]);
@@ -132,8 +117,7 @@ const Game: React.FC = () => {
     setGameFeedback(`It was `);
   };
 
-  const getIMDBLink = (movieId: string) =>
-    `https://www.imdb.com/title/${movieId}/`;
+  const getIMDBLink = (movieId: string) => `https://www.imdb.com/title/${movieId}/`;
 
   const shuffleArray = <T,>(array: T[]): T[] => {
     return array.sort(() => Math.random() - 0.5);
@@ -157,8 +141,7 @@ const Game: React.FC = () => {
       const filteredSuggestions = Object.keys(titleMapping)
         .filter(
           (key) =>
-            key.toLowerCase().includes(value.toLowerCase()) &&
-            !previousGuesses.includes(key),
+            key.toLowerCase().includes(value.toLowerCase()) && !previousGuesses.includes(key),
         )
         .slice(0, 5); // Limit to 5 suggestions
       setSuggestions(filteredSuggestions);
@@ -217,19 +200,14 @@ const Game: React.FC = () => {
     );
   };
 
-  if (loading)
-    return <div className="p-4 text-center text-gray-700">Loading...</div>;
+  if (loading) return <div className="p-4 text-center text-gray-700">Loading...</div>;
   if (!currentMovie)
-    return (
-      <div className="p-4 text-center text-gray-700">Selecting a movie...</div>
-    );
+    return <div className="p-4 text-center text-gray-700">Selecting a movie...</div>;
   if (error) return <div className="p-4 text-center text-red-600">{error}</div>;
 
   return (
     <div className="mx-auto mt-4 max-w-2xl rounded-lg bg-white p-8 text-gray-800 shadow-2xl">
-      <h2 className="mb-6 text-center text-3xl font-bold text-black">
-        {title}
-      </h2>
+      <h2 className="mb-6 text-center text-3xl font-bold text-black">{title}</h2>
       {!gameOver ? (
         <>
           <div className="mb-6 rounded-lg bg-gray-100 p-6 shadow-inner">
@@ -251,9 +229,7 @@ const Game: React.FC = () => {
           )}
           {previousGuesses.length > 0 && (
             <div className="mb-6">
-              <h4 className="mb-2 font-semibold text-gray-700">
-                Previous guesses:
-              </h4>
+              <h4 className="mb-2 font-semibold text-gray-700">Previous guesses:</h4>
               <div className="flex flex-wrap gap-2">
                 {previousGuesses.map((prevGuess, index) => (
                   <span
