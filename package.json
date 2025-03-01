@@ -14,7 +14,7 @@
   },
   "scripts": {
     "lint": "next lint",
-    "lint:fix": "eslint --fix .",
+    "lint:fix": "next lint --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "dev": "next dev --turbopack",
